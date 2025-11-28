@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Auto Camera Switcher</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="panel">
+    <h2>Auto Camera Switcher</h2>
+
+    <div class="camera-setup">
+      <h3>Camera Assignment</h3>
+      <button id="cam1-btn" class="camera-btn">Camera 1</button>
+      <button id="cam2-btn" class="camera-btn">Camera 2</button>
+      <button id="cam3-btn" class="camera-btn">Camera 3</button>
+      <p class="hint">Click to assign video tracks</p>
+    </div>
+
+    <div class="analysis">
+      <button id="analyze-btn" class="primary-btn">Analyze Audio</button>
+      <div id="progress" class="progress-display"></div>
+    </div>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <script src="index.js"></script>
+</body>
+</html>

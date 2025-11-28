@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Auto Camera Switcher</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="panel">
+    <h2>Auto Camera Switcher</h2>
+
+    <section class="camera-setup">
+      <h3>Assign Camera Tracks</h3>
+      <button id="cam1-btn" class="camera-btn">Camera 1</button>
+      <button id="cam2-btn" class="camera-btn">Camera 2</button>
+      <button id="cam3-btn" class="camera-btn">Camera 3</button>
+      <p class="hint">Click each button to bind a camera to a video track (top three tracks).</p>
+    </section>
+
+    <section class="analysis">
+      <h3>Analyze Audio</h3>
+      <button id="analyze-btn" class="primary-btn" disabled>Analyze and Generate Switches</button>
+      <div id="progress" class="progress-display"></div>
+    </section>
+
+    <div id="status" class="status info"></div>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
