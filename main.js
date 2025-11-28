@@ -1,11 +1,30 @@
-// Auto Camera Switcher - Phase 1: UI and Basic Integration
+// Auto Camera Switcher - Phase 4: Full Implementation
 // UXP extension for Premiere Pro
 
 console.log('[Auto Camera] Extension loaded');
 
+// Import modules
+const AudioAnalyzer = require('./modules/AudioAnalyzer.js');
+const CutGenerator = require('./modules/CutGenerator.js');
+const TimelineEditor = require('./modules/TimelineEditor.js');
+const VisualizationUI = require('./modules/VisualizationUI.js');
+
+console.log('[Auto Camera] Modules imported successfully');
+
 // State management
 const state = {
-  cameras: { 1: null, 2: null, 3: null }
+  cameras: { 1: null, 2: null, 3: null },
+  analysisResult: null,
+  cuts: null,
+  isAnalyzing: false,
+  isEditing: false,
+  currentStep: 'setup',  // 'setup' | 'config' | 'processing' | 'refinement'
+  settings: {
+    minCutDuration: 2.0,
+    sampleRate: 1.0,
+    cutFrequency: 'medium',
+    transitionDuration: 0.0
+  }
 };
 
 // DOM elements
@@ -353,11 +372,11 @@ function allCamerasAssigned() {
 }
 
 /**
- * Mock audio analysis workflow (Phase 1)
- * Phase 2 will implement actual audio processing
+ * Full audio analysis and editing workflow
+ * Integrates: AudioAnalyzer → CutGenerator → TimelineEditor → VisualizationUI
  */
 async function analyze() {
-  console.log('[Auto Camera] Starting analysis...');
+  console.log('[Auto Camera] Starting full analysis workflow...');
 
   try {
     // Verify all cameras assigned
@@ -366,50 +385,119 @@ async function analyze() {
       return;
     }
 
-    // Disable analyze button during processing
+    // Set state
+    state.isAnalyzing = true;
     analyzeBtn.disabled = true;
 
-    // Get sequence info
+    // Get sequence
     const sequence = await getActiveSequence();
     if (!sequence) {
       updateStatus('Error: No active sequence found.', 'error');
+      state.isAnalyzing = false;
       analyzeBtn.disabled = false;
       return;
     }
 
-    console.log('[Auto Camera] Sequence info:', {
-      name: sequence.name
+    console.log('[Auto Camera] Sequence:', sequence.name);
+    state.currentStep = 'processing';
+
+    // Step 1: Audio Analysis
+    updateProgress('Step 1/4: Analyzing audio levels...');
+    const analyzer = new AudioAnalyzer();
+    analyzer.onProgress((progress, msg) => {
+      updateProgress(`Step 1/4: ${msg}`);
     });
 
-    // Mock analysis with progress updates
-    updateProgress('Initializing audio analysis...');
-    await delay(800);
+    state.analysisResult = await analyzer.analyzeSequence(
+      sequence,
+      state.cameras,
+      { sampleRate: state.settings.sampleRate }
+    );
 
-    updateProgress('Extracting audio from sequence...');
-    await delay(1200);
+    console.log('[Auto Camera] Audio analysis complete:', {
+      duration: state.analysisResult.duration,
+      samples: Object.keys(state.analysisResult.timeline).length
+    });
 
-    updateProgress('Analyzing speech patterns...');
-    await delay(1500);
+    // Step 2: Cut Generation
+    updateProgress('Step 2/4: Generating camera switches...');
+    const generator = new CutGenerator();
 
-    updateProgress('Identifying active speakers...');
-    await delay(1000);
+    state.cuts = generator.generateCuts(state.analysisResult, {
+      minCutDuration: state.settings.minCutDuration,
+      cutFrequency: state.settings.cutFrequency,
+      transitionDuration: state.settings.transitionDuration
+    });
 
-    updateProgress('Generating camera switch points...');
-    await delay(1200);
+    console.log('[Auto Camera] Cut generation complete:', {
+      totalCuts: state.cuts.length
+    });
+
+    // Get statistics
+    const stats = generator.getStatistics(state.cuts);
+    console.log('[Auto Camera] Cut statistics:', stats);
+
+    // Step 3: Timeline Editing
+    updateProgress('Step 3/4: Creating multicam sequence...');
+    const editor = new TimelineEditor();
+    editor.onProgress((progress, msg) => {
+      updateProgress(`Step 3/4: ${msg}`);
+    });
+
+    const editResult = await editor.applyEdits(sequence, state.cuts, state.cameras);
+
+    if (!editResult.success) {
+      throw new Error(editResult.errors ? editResult.errors.join(', ') : 'Timeline editing failed');
+    }
+
+    console.log('[Auto Camera] Timeline editing complete:', editResult);
+
+    // Step 4: Visualization
+    updateProgress('Step 4/4: Rendering visualization...');
+
+    // Get or create canvas
+    let canvas = document.getElementById('vis-canvas');
+    if (!canvas) {
+      console.log('[Auto Camera] Creating visualization canvas');
+      const container = document.querySelector('.analysis');
+      if (container) {
+        canvas = document.createElement('canvas');
+        canvas.id = 'vis-canvas';
+        canvas.width = 800;
+        canvas.height = 200;
+        canvas.style.width = '100%';
+        canvas.style.height = 'auto';
+        canvas.style.marginTop = '12px';
+        canvas.style.borderRadius = '4px';
+        canvas.style.backgroundColor = '#1e1e1e';
+        container.appendChild(canvas);
+      }
+    }
+
+    if (canvas) {
+      const vis = new VisualizationUI(canvas);
+      vis.render(state.analysisResult);
+      console.log('[Auto Camera] Visualization rendered');
+    }
 
     // Complete
     updateProgress('');
-    updateStatus('✓ Analysis complete! (Mock data - Phase 1)', 'success');
+    state.currentStep = 'refinement';
+    state.isAnalyzing = false;
 
-    console.log('[Auto Camera] Mock analysis completed successfully');
+    updateStatus(
+      `✓ Complete! Created "${editResult.newSequenceName}" with ${editResult.cutsApplied} cuts`,
+      'success'
+    );
 
-    // Re-enable analyze button
-    analyzeBtn.disabled = false;
+    console.log('[Auto Camera] Full workflow completed successfully');
 
   } catch (error) {
     console.error('[Auto Camera] Error during analysis:', error);
     updateStatus(`Error: ${error.message}`, 'error');
     updateProgress('');
+    state.isAnalyzing = false;
+    state.currentStep = 'setup';
     analyzeBtn.disabled = false;
   }
 }
