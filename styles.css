@@ -133,3 +133,77 @@ h3 {
   background-color: #1e2a3a;
   color: #89c4f4;
 }
+
+/* Configuration section */
+.configuration {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #3e3e3e;
+}
+
+.setting-group {
+  margin-bottom: 16px;
+}
+
+.setting-group label {
+  display: block;
+}
+
+.label-text {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #d4d4d4;
+}
+
+.setting-group input[type="number"],
+.setting-group select {
+  width: 100%;
+  padding: 8px;
+  background-color: #2d2d2d;
+  color: #d4d4d4;
+  border: 1px solid #3e3e3e;
+  border-radius: 4px;
+  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+}
+
+.setting-group input[type="number"]:focus,
+.setting-group select:focus {
+  outline: none;
+  border-color: #0e639c;
+  background-color: #3e3e3e;
+}
+
+/* Processing section */
+.processing {
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #3e3e3e;
+}
+
+/* Refinement section */
+.refinement {
+  margin-bottom: 20px;
+}
+
+.visualization-container {
+  background-color: #252525;
+  border-radius: 4px;
+  padding: 12px;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visualization-container canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+.visualization-container .hint {
+  margin: 0;
+  text-align: center;
+}

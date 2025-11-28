@@ -29,6 +29,7 @@ const state = {
 
 // DOM elements
 let cam1Btn, cam2Btn, cam3Btn, analyzeBtn, progressDiv, statusDiv;
+let minCutDurationInput, sampleRateInput, cutFrequencySelect;
 
 function ensureMarkup() {
   // If HTML didn't render (seen as blank panel), inject fallback markup.
@@ -90,17 +91,44 @@ function initUI() {
   progressDiv = document.getElementById('progress');
   statusDiv = document.getElementById('status');
 
+  // Get settings input elements
+  minCutDurationInput = document.getElementById('min-cut-duration');
+  sampleRateInput = document.getElementById('sample-rate');
+  cutFrequencySelect = document.getElementById('cut-frequency');
+
   if (!cam1Btn || !cam2Btn || !cam3Btn || !analyzeBtn || !progressDiv || !statusDiv) {
     console.warn('[Auto Camera] UI elements not found; retrying...');
     setTimeout(initUI, 100);
     return;
   }
 
-  // Set up event listeners
+  // Set up event listeners for camera buttons
   cam1Btn.addEventListener('click', () => setupCamera(1));
   cam2Btn.addEventListener('click', () => setupCamera(2));
   cam3Btn.addEventListener('click', () => setupCamera(3));
   analyzeBtn.addEventListener('click', analyze);
+
+  // Set up event listeners for settings inputs (if they exist in HTML)
+  if (minCutDurationInput) {
+    minCutDurationInput.addEventListener('change', (e) => {
+      state.settings.minCutDuration = parseFloat(e.target.value);
+      console.log('[Auto Camera] Min cut duration updated:', state.settings.minCutDuration);
+    });
+  }
+
+  if (sampleRateInput) {
+    sampleRateInput.addEventListener('change', (e) => {
+      state.settings.sampleRate = parseFloat(e.target.value);
+      console.log('[Auto Camera] Sample rate updated:', state.settings.sampleRate);
+    });
+  }
+
+  if (cutFrequencySelect) {
+    cutFrequencySelect.addEventListener('change', (e) => {
+      state.settings.cutFrequency = e.target.value;
+      console.log('[Auto Camera] Cut frequency updated:', state.settings.cutFrequency);
+    });
+  }
 
   console.log('[Auto Camera] Event listeners attached');
   updateStatus('Ready. Assign camera tracks to begin.', 'info');
@@ -455,22 +483,26 @@ async function analyze() {
     // Step 4: Visualization
     updateProgress('Step 4/4: Rendering visualization...');
 
-    // Get or create canvas
+    // Get or create canvas in visualization container
     let canvas = document.getElementById('vis-canvas');
     if (!canvas) {
       console.log('[Auto Camera] Creating visualization canvas');
-      const container = document.querySelector('.analysis');
+      const container = document.getElementById('vis-container') || document.querySelector('.visualization-container');
       if (container) {
+        // Clear container first (remove hint text)
+        container.innerHTML = '';
+
         canvas = document.createElement('canvas');
         canvas.id = 'vis-canvas';
         canvas.width = 800;
         canvas.height = 200;
         canvas.style.width = '100%';
         canvas.style.height = 'auto';
-        canvas.style.marginTop = '12px';
         canvas.style.borderRadius = '4px';
         canvas.style.backgroundColor = '#1e1e1e';
         container.appendChild(canvas);
+      } else {
+        console.warn('[Auto Camera] Visualization container not found in DOM');
       }
     }
 
